@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Box Breathing</title>
+  <style>
+    /* ===== Theme Variables ===== */
+    :root {
+      --background-color: #f8f9fa;
+      --text-color: #444;
+      --main-color: #89b8c2;
+      --secondary-color: #e6eef0;
+      --box-border-color: #89b8c2;
+      --border-radius: 0.5em;
+      --box-shadow: 0 2px 8px rgba(137, 184, 194, 0.08);
+      --spacing-unit: 0.4em;
+    }
+
+    .dark-theme {
+      --background-color: #1a2235;
+      --text-color: #d8e1f0;
+      --main-color: #8a9bd4;
+      --secondary-color: #2a3245;
+      --box-border-color: #8a9bd4;
+      --box-shadow: 0 2px 8px rgba(25, 32, 48, 0.3);
+    }
+
+    /* ===== Base Styles ===== */
+    body {
+      background-color: var(--background-color);
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1.4;
+    }
+
+    /* ===== Layout ===== */
+    .container {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 0 calc(var(--spacing-unit) * 2);
+      box-sizing: border-box;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: calc(var(--spacing-unit) * 2) 0;
+      margin-bottom: var(--spacing-unit);
+    }
+
+    section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: calc(var(--spacing-unit) * 2);
+    }
+
+    footer {
+      font-size: 1.1rem;
+      padding: calc(var(--spacing-unit) * 1.5);
+      text-align: center;
+      background-color: var(--secondary-color);
+      margin-top: auto;
+      border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+
+    /* ===== Typography ===== */
+    h1 {
+      font-size: clamp(1.3rem, 4vw, 1.6rem);
+      margin: 0;
+      font-weight: 600;
+    }
+
+    h2 {
+      font-size: 1rem;
+      margin: 0 0 calc(var(--spacing-unit) * 1) 0;
+      font-weight: 600;
+      color: var(--main-color);
+    }
+
+    /* ===== Content Components ===== */
+    .intro-text {
+      background-color: var(--secondary-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 3);
+      width: 100%;
+      margin-bottom: var(--spacing-unit);
+    }
+
+    .intro-text p {
+      margin: 0;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: calc(var(--spacing-unit) * 3);
+      width: 100%;
+      align-items: start;
+    }
+
+    /* Instructions */
+    .instructions {
+      background-color: transparent;
+      padding: calc(var(--spacing-unit) * 1.5) 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: none;
+    }
+
+    ol {
+      padding-left: calc(var(--spacing-unit) * 3);
+      margin: 0;
+    }
+
+    li {
+      position: relative;
+      padding-left: var(--spacing-unit);
+      margin-bottom: calc(var(--spacing-unit) * 1);
+      font-size: 0.9rem;
+    }
+
+    li:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ===== Breathing Box ===== */
+    .breathing-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: calc(var(--spacing-unit) * 3);
+    }
+
+    .box {
+      width: 14em;
+      height: 14em;
+      max-width: 90vw;
+      max-height: 90vw;
+      border: 2px solid var(--box-border-color);
+      border-radius: var(--border-radius);
+      position: relative;
+      background-color: var(--secondary-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: var(--box-shadow);
+      transition: all 0.3s ease;
+    }
+
+    .box-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .box-content.visible {
+      opacity: 1;
+    }
+
+    .action-text {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: calc(var(--spacing-unit) * 1.5);
+    }
+
+    .timer {
+      font-size: 2.4rem;
+      font-weight: 700;
+    }
+
+    .dot {
+      position: absolute;
+      width: 1.2em;
+      height: 1.2em;
+      background-color: var(--main-color);
+      border-radius: 50%;
+      top: -0.6em;
+      left: -0.6em;
+      animation: none;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .dot.animating {
+      animation: moveDot 16s linear infinite;
+    }
+
+    /* ===== Buttons ===== */
+    button {
+      width: 8em;
+      padding: calc(var(--spacing-unit) * 2);
+      background-color: var(--main-color);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ===== Theme Toggle ===== */
+    .theme-container {
+      display: flex;
+      align-items: center;
+      gap: calc(var(--spacing-unit) * 1.5);
+      background-color: var(--secondary-color);
+      padding: calc(var(--spacing-unit) * 1.25) calc(var(--spacing-unit) * 2);
+      border-radius: 2em;
+      box-shadow: var(--box-shadow);
+    }
+
+    .theme-label {
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .theme-toggle {
+      width: 2em;
+      height: 2em;
+      font-size: 0.9rem;
+      border-radius: 50%;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: none;
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+      box-shadow: none;
+    }
+
+    /* ===== Animation ===== */
+    @keyframes moveDot {
+
+      /* Inhale - top edge */
+      0% {
+        top: -0.6em;
+        left: -0.6em;
+      }
+
+      25% {
+        top: -0.6em;
+        left: calc(100% - 0.6em);
+      }
+
+      /* Hold - right edge */
+      25.1% {
+        top: -0.6em;
+        left: calc(100% - 0.6em);
+      }
+
+      50% {
+        top: calc(100% - 0.6em);
+        left: calc(100% - 0.6em);
+      }
+
+      /* Exhale - bottom edge */
+      50.1% {
+        top: calc(100% - 0.6em);
+        left: calc(100% - 0.6em);
+      }
+
+      75% {
+        top: calc(100% - 0.6em);
+        left: -0.6em;
+      }
+
+      /* Hold - left edge */
+      75.1% {
+        top: calc(100% - 0.6em);
+        left: -0.6em;
+      }
+
+      100% {
+        top: -0.6em;
+        left: -0.6em;
+      }
+    }
+
+    /* ===== Responsive adjustments ===== */
+    @media (max-width: 480px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+        gap: calc(var(--spacing-unit) * 2);
+      }
+
+      .box {
+        width: 12em;
+        height: 12em;
+      }
+
+      .theme-container {
+        padding: calc(var(--spacing-unit)) calc(var(--spacing-unit) * 1.5);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <header>
+      <h1>Box Breathing</h1>
+      <div class="theme-container">
+        <span class="theme-label">Theme</span>
+        <button class="theme-toggle" title="Toggle dark/light theme">🌓</button>
+      </div>
+    </header>
+
+    <section>
+      <div class="intro-text">
+        <p>Box breathing helps reduce stress and improve focus through controlled breathing patterns in a simple 4-count
+          rhythm.</p>
+      </div>
+
+      <div class="content-grid">
+        <div class="instructions">
+          <h2>How to practice:</h2>
+          <ol>
+            <li>Inhale through nose (4 counts)</li>
+            <li>Hold breath (4 counts)</li>
+            <li>Exhale through mouth (4 counts)</li>
+            <li>Hold breath (4 counts)</li>
+            <li>Repeat as needed</li>
+          </ol>
+        </div>
+
+        <div class="breathing-container">
+          <div class="box">
+            <div class="dot"></div>
+            <div class="box-content">
+              <div class="action-text">Inhale</div>
+              <div class="timer">1</div>
+            </div>
+          </div>
+          <button class="start-btn">Start</button>
+        </div>
+      </div>
+    </section>
+
+    <footer>Be Well</footer>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // DOM elements
+      const startButton = document.querySelector('.start-btn');
+      const dot = document.querySelector('.dot');
+      const themeToggle = document.querySelector('.theme-toggle');
+      const boxContent = document.querySelector('.box-content');
+      const actionText = document.querySelector('.action-text');
+      const timer = document.querySelector('.timer');
+
+      // Constants
+      const CYCLE_TIME = 16000; // 16 seconds for full cycle
+      const SEGMENT_TIME = 4000; // 4 seconds per segment
+      let animationInterval;
+
+      // Animation control
+      startButton.addEventListener('click', () => {
+        const isAnimating = dot.classList.toggle('animating');
+        startButton.textContent = isAnimating ? 'Stop' : 'Start';
+        boxContent.classList.toggle('visible', isAnimating);
+
+        if (isAnimating) {
+          const startTime = Date.now();
+          animationInterval = setInterval(() => updateBoxContent(startTime), 100);
+        } else {
+          clearInterval(animationInterval);
+        }
+      });
+
+      // Update the content in the box
+      function updateBoxContent(startTime) {
+        const elapsed = (Date.now() - startTime) % CYCLE_TIME;
+        const segment = Math.floor(elapsed / SEGMENT_TIME);
+        const segmentElapsed = elapsed % SEGMENT_TIME;
+        const count = 1 + Math.floor(segmentElapsed / 1000);
+
+        timer.textContent = count;
+
+        const actions = ["Inhale", "Hold", "Exhale", "Hold"];
+        actionText.textContent = actions[segment];
+      }
+
+      // Theme functions
+      function setTheme(isDark) {
+        document.body.classList.toggle('dark-theme', isDark);
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        themeToggle.textContent = isDark ? '🌙' : '☀️';
+      }
+
+      // Initialize theme
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(savedTheme ? savedTheme === 'dark' : prefersDarkMode);
+
+      // Theme toggle event
+      themeToggle.addEventListener('click', () => {
+        const isDarkTheme = document.body.classList.contains('dark-theme');
+        setTheme(!isDarkTheme);
+      });
+    });
+  </script>
+</body>
+
+</html>
