@@ -75,6 +75,20 @@
       border-radius: var(--border-radius) var(--border-radius) 0 0;
     }
 
+    footer a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4em;
+      color: var(--text-color);
+      text-decoration: none;
+    }
+
+    footer img {
+      height: 1em;
+      width: auto;
+      vertical-align: middle;
+    }
+
     /* ===== Typography ===== */
     h1 {
       font-size: clamp(1.3rem, 4vw, 1.6rem);
@@ -368,7 +382,12 @@
       </div>
     </section>
 
-    <footer>Be Well</footer>
+    <footer>
+      <a href="https://github.com/tiberius-s/box-breathing">
+        <img id="github-icon" src="./github-mark.svg" alt="GitHub logo" />
+        <span>Source</span>
+      </a>
+    </footer>
   </main>
 
   <script>
@@ -418,6 +437,10 @@
         document.body.classList.toggle('dark-theme', isDark);
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
         themeToggle.textContent = isDark ? '🌙' : '☀️';
+
+        // Update GitHub icon based on theme
+        const githubIcon = document.getElementById('github-icon');
+        githubIcon.src = isDark ? './github-mark-white.svg' : './github-mark.svg';
       }
 
       // Initialize theme
