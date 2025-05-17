@@ -86,7 +86,6 @@
     footer img {
       height: 1em;
       width: auto;
-      vertical-align: middle;
     }
 
     /* ===== Typography ===== */
@@ -98,7 +97,7 @@
 
     h2 {
       font-size: 1rem;
-      margin: 0 0 calc(var(--spacing-unit) * 1) 0;
+      margin: 0 0 var(--spacing-unit) 0;
       font-weight: 600;
       color: var(--main-color);
     }
@@ -129,12 +128,10 @@
 
     /* Instructions */
     .instructions {
-      background-color: transparent;
       padding: calc(var(--spacing-unit) * 1.5) 0;
       height: 100%;
       display: flex;
       flex-direction: column;
-      box-shadow: none;
     }
 
     ol {
@@ -145,7 +142,7 @@
     li {
       position: relative;
       padding-left: var(--spacing-unit);
-      margin-bottom: calc(var(--spacing-unit) * 1);
+      margin-bottom: var(--spacing-unit);
       font-size: 0.9rem;
     }
 
@@ -225,7 +222,7 @@
       border: none;
       border-radius: var(--border-radius);
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
       font-size: 0.95rem;
       font-weight: 500;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
@@ -324,22 +321,81 @@
 
     /* ===== Responsive adjustments ===== */
     @media (max-width: 480px) {
+
+      /* Adjust base variables for mobile */
+      :root {
+        --spacing-unit: 0.3em;
+      }
+
+      /* Container takes exact viewport height */
+      .container {
+        height: 100vh;
+        padding: 0 1em;
+        grid-template-rows: auto auto 1fr auto;
+      }
+
+      /* Compact header */
+      header {
+        padding: 0.8em 0;
+        margin-bottom: 0;
+      }
+
+      /* Streamlined content */
+      section {
+        gap: 0.6em;
+        padding: 0.5em 0;
+      }
+
       .content-grid {
         grid-template-columns: 1fr;
-        gap: calc(var(--spacing-unit) * 2);
+        gap: 0.8em;
+      }
+
+      /* Essential content only */
+      .intro-text {
+        padding: 0.7em 1em;
+        margin-bottom: 0.5em;
+      }
+
+      .intro-text p {
+        font-size: 0.8rem;
+      }
+
+      /* Compact instructions */
+      .instructions {
+        padding: 0.4em 0;
+      }
+
+      li {
+        margin-bottom: 0.3em;
+        font-size: 0.8rem;
+      }
+
+      /* Enhanced breathing box */
+      .breathing-container {
+        gap: 1.2em;
+        margin: 1em 0;
       }
 
       .box {
         width: 12em;
         height: 12em;
+        border-width: 2.5px;
       }
 
+      /* Compact UI elements */
       .theme-container {
-        padding: calc(var(--spacing-unit)) calc(var(--spacing-unit) * 1.5);
+        padding: 0.5em 0.8em;
       }
 
-      li {
-        margin-bottom: 0;
+      button {
+        padding: 0.8em;
+      }
+
+      /* Footer always at bottom */
+      footer {
+        padding: 0.5em;
+        font-size: 0.9rem;
       }
     }
   </style>
@@ -351,7 +407,7 @@
       <h1>Box Breathing</h1>
       <div class="theme-container">
         <span class="theme-label">Theme</span>
-        <button class="theme-toggle" title="Toggle dark/light theme">🌓</button>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme">🌓</button>
       </div>
     </header>
 
@@ -381,7 +437,7 @@
               <div class="timer">1</div>
             </div>
           </div>
-          <button class="start-btn">Start</button>
+          <button class="start-btn" id="start-btn">Start</button>
         </div>
       </div>
     </section>
@@ -397,9 +453,9 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // DOM elements
-      const startButton = document.querySelector('.start-btn');
+      const startButton = document.getElementById('start-btn');
       const dot = document.querySelector('.dot');
-      const themeToggle = document.querySelector('.theme-toggle');
+      const themeToggle = document.getElementById('theme-toggle');
       const boxContent = document.querySelector('.box-content');
       const actionText = document.querySelector('.action-text');
       const timer = document.querySelector('.timer');
@@ -407,10 +463,13 @@
       // Constants
       const CYCLE_TIME = 16000; // 16 seconds for full cycle
       const SEGMENT_TIME = 4000; // 4 seconds per segment
+      const ACTIONS = ["Inhale", "Hold", "Exhale", "Hold"];
       let animationInterval;
 
       // Animation control
-      startButton.addEventListener('click', () => {
+      startButton.addEventListener('click', toggleAnimation);
+
+      function toggleAnimation() {
         const isAnimating = dot.classList.toggle('animating');
         startButton.textContent = isAnimating ? 'Stop' : 'Start';
         boxContent.classList.toggle('visible', isAnimating);
@@ -421,7 +480,7 @@
         } else {
           clearInterval(animationInterval);
         }
-      });
+      }
 
       // Update the content in the box
       function updateBoxContent(startTime) {
@@ -431,9 +490,7 @@
         const count = 1 + Math.floor(segmentElapsed / 1000);
 
         timer.textContent = count;
-
-        const actions = ["Inhale", "Hold", "Exhale", "Hold"];
-        actionText.textContent = actions[segment];
+        actionText.textContent = ACTIONS[segment];
       }
 
       // Theme functions
