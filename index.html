@@ -322,16 +322,16 @@
     /* ===== Responsive adjustments ===== */
     @media (max-width: 480px) {
 
+      /* Container takes exact viewport height */
+      .container {
+        height: 100dvh;
+        padding: 0 1em;
+        grid-template-rows: auto auto 1fr auto;
+      }
+
       /* Adjust base variables for mobile */
       :root {
         --spacing-unit: 0.3em;
-      }
-
-      /* Container takes exact viewport height */
-      .container {
-        height: 100vh;
-        padding: 0 1em;
-        grid-template-rows: auto auto 1fr auto;
       }
 
       /* Compact header */
