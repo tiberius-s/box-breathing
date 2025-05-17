@@ -324,9 +324,16 @@
 
       /* Container takes exact viewport height */
       .container {
+        /* Fallback for older browsers */
+        height: 100vh;
+        /* Modern browsers will use this instead */
         height: 100dvh;
         padding: 0 1em;
         grid-template-rows: auto auto 1fr auto;
+
+        /* Prevent content overflow */
+        min-height: 0;
+        overflow-y: auto;
       }
 
       /* Adjust base variables for mobile */
