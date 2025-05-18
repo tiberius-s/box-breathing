@@ -17,6 +17,7 @@
       --border-radius: 0.5em;
       --box-shadow: 0 2px 8px rgba(137, 184, 194, 0.08);
       --spacing-unit: 0.4em;
+      --transition-speed: 0.3s;
     }
 
     .dark-theme {
@@ -32,7 +33,7 @@
     body {
       background-color: var(--background-color);
       color: var(--text-color);
-      transition: background-color 0.3s ease, color 0.3s ease;
+      transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
       margin: 0;
       padding: 0;
       font-family: system-ui, -apple-system, sans-serif;
@@ -171,7 +172,7 @@
       justify-content: center;
       align-items: center;
       box-shadow: var(--box-shadow);
-      transition: all 0.3s ease;
+      transition: all var(--transition-speed) ease;
     }
 
     .box-content {
@@ -179,7 +180,7 @@
       flex-direction: column;
       align-items: center;
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity var(--transition-speed) ease;
     }
 
     .box-content.visible {
@@ -322,23 +323,18 @@
     /* ===== Responsive adjustments ===== */
     @media (max-width: 480px) {
 
-      /* Container takes exact viewport height */
-      .container {
-        /* Fallback for older browsers */
-        height: 100vh;
-        /* Modern browsers will use this instead */
-        height: 100dvh;
-        padding: 0 1em;
-        grid-template-rows: auto auto 1fr auto;
-
-        /* Prevent content overflow */
-        min-height: 0;
-        overflow-y: auto;
-      }
-
       /* Adjust base variables for mobile */
       :root {
         --spacing-unit: 0.3em;
+      }
+
+      /* Container takes exact viewport height */
+      .container {
+        height: 100dvh;
+        padding: 0 1em;
+        grid-template-rows: auto auto 1fr auto;
+        min-height: 0;
+        overflow-y: auto;
       }
 
       /* Compact header */
@@ -405,11 +401,34 @@
         font-size: 0.9rem;
       }
     }
+
+    /* Focus styles for better accessibility */
+    *:focus {
+      outline: 3px solid var(--main-color);
+      outline-offset: 2px;
+    }
+
+    /* Skip to content link for keyboard users */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--main-color);
+      color: white;
+      padding: 8px;
+      z-index: 100;
+      transition: top var(--transition-speed);
+    }
+
+    .skip-link:focus {
+      top: 0;
+    }
   </style>
 </head>
 
 <body>
-  <main class="container">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <main class="container" id="main-content" role="main" aria-label="Box breathing exercise">
     <header>
       <h1>Box Breathing</h1>
       <div class="theme-container">
@@ -427,24 +446,24 @@
       <div class="content-grid">
         <div class="instructions">
           <h2>How to practice:</h2>
-          <ol>
-            <li>Inhale through nose (4 counts)</li>
-            <li>Hold breath (4 counts)</li>
-            <li>Exhale through mouth (4 counts)</li>
-            <li>Hold breath (4 counts)</li>
-            <li>Repeat as needed</li>
+          <ol aria-label="Box breathing instructions">
+            <li aria-label="Step 1">Inhale through nose (4 counts)</li>
+            <li aria-label="Step 2">Hold breath (4 counts)</li>
+            <li aria-label="Step 3">Exhale through mouth (4 counts)</li>
+            <li aria-label="Step 4">Hold breath (4 counts)</li>
+            <li aria-label="Step 5">Repeat as needed</li>
           </ol>
         </div>
 
-        <div class="breathing-container">
-          <div class="box">
-            <div class="dot"></div>
-            <div class="box-content">
-              <div class="action-text">Inhale</div>
-              <div class="timer">1</div>
+        <div class="breathing-container" aria-label="Breathing exercise visualization">
+          <div class="box" role="img" aria-label="Breathing guide box with moving dot">
+            <div class="dot" aria-hidden="true"></div>
+            <div class="box-content" aria-live="polite" role="status">
+              <div class="action-text" aria-label="Current breathing action">Inhale</div>
+              <div class="timer" aria-label="Seconds counter">1</div>
             </div>
           </div>
-          <button class="start-btn" id="start-btn">Start</button>
+          <button class="start-btn" id="start-btn" aria-label="Start or stop breathing exercise">Start</button>
         </div>
       </div>
     </section>
@@ -466,6 +485,7 @@
       const boxContent = document.querySelector('.box-content');
       const actionText = document.querySelector('.action-text');
       const timer = document.querySelector('.timer');
+      const box = document.querySelector('.box');
 
       // Constants
       const CYCLE_TIME = 16000; // 16 seconds for full cycle
@@ -481,10 +501,18 @@
         startButton.textContent = isAnimating ? 'Stop' : 'Start';
         boxContent.classList.toggle('visible', isAnimating);
 
+        // Update ARIA properties
+        startButton.setAttribute('aria-label', isAnimating ? 'Stop breathing exercise' : 'Start breathing exercise');
+        startButton.setAttribute('aria-pressed', isAnimating);
+
         if (isAnimating) {
           const startTime = Date.now();
+          box.setAttribute('aria-live', 'assertive');
+          box.setAttribute('aria-label', 'Breathing exercise in progress');
           animationInterval = setInterval(() => updateBoxContent(startTime), 100);
         } else {
+          box.setAttribute('aria-live', 'off');
+          box.setAttribute('aria-label', 'Breathing guide box with moving dot');
           clearInterval(animationInterval);
           setTimeout(() => {
             timer.textContent = 1;
@@ -509,6 +537,7 @@
         document.body.classList.toggle('dark-theme', isDark);
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
         themeToggle.textContent = isDark ? '🌙' : '☀️';
+        themeToggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
 
         // Update GitHub icon based on theme
         const githubIcon = document.getElementById('github-icon');
