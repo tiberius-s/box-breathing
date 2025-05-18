@@ -486,6 +486,8 @@
           animationInterval = setInterval(() => updateBoxContent(startTime), 100);
         } else {
           clearInterval(animationInterval);
+          timer.textContent = 1;
+          actionText.textContent = ACTIONS[0];
         }
       }
 
